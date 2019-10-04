@@ -1,0 +1,68 @@
+#----------------------------------------------------------
+Creating an angular app and committing to github
+#----------------------------------------------------------
+
+ng new angularapp
+cd angularapp
+npm install
+git add .
+git commit -m 'Initial Commit'
+git remote add origin https://github.com/tinyb0y/project1.git
+git push -u origin master
+
+#----------------------------------------------------------
+
+
+#----------------------------------------------------------
+Creating a Dockerfile:
+#----------------------------------------------------------
+FROM ubuntu
+RUN apt-get update && apt-get install -y curl\
+	 && curl -sL https://deb.nodesource.com/setup_10.x -o nodesource_setup.s
+h \
+	 && sh nodesource_setup.sh \
+	 && apt-get install -y nodejs \
+	 && npm install -g @angular/cli
+
+COPY . /app
+WORKDIR /app
+RUN npm install
+CMD ng serve --host 0.0.0.0
+
+EXPOSE 4200
+
+#----------------------------------------------------------
+
+Push the Dockerfile to github
+git add .
+git push -u origin master
+
+
+#----------------------------------------------------------
+Creating Pipeline
+#----------------------------------------------------------
+node {
+   def app
+   stage('Preparation') { // for display purposes
+      // Get some code from a GitHub repository
+      git 'https://github.com/tinyb0y/project1.git'
+   }
+   stage('Build') {
+      // Run the maven build
+        app = docker.build("tinyb0y/project1")
+    
+   }
+   stage('Test') {
+       echo 'Testing'
+   }
+   stage('Results') {
+        echo "Trying to Push Docker Build to DockerHub"
+	    
+	    //withDockerRegistry(credentialsId: 'dokcerid', url: 'https://hub.docker.com/') {
+	    sh label: 'Docker Login', script: 'docker login --username "tinyb0y" --password "xxxxxx"'
+    	    app.push("${env.BUILD_NUMBER}")
+            app.push("latest")
+   }
+}
+
+

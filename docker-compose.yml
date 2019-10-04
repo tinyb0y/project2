@@ -1,0 +1,7 @@
+version: '2'
+services:
+    angular-service:
+      container_name: angularcontainer  # Container name
+      build: angularproject
+      ports: 
+        - '4200:4200' # Port mapping
